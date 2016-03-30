@@ -993,9 +993,17 @@ function theme_users_list($feed, $hide_pagination = false) {
 		$last_tweet = strtotime($user->status->created_at);
 		$content = "{$name}<br />";
 		$content .= "<span class='about'>";
+
 		if($user->description != "") {
 			$content .= _(PROFILE_BIO).": " . twitter_parse_tags($user->description, $user->entities->description) . "<br />";
 		}
+
+		if($user->url != "") {
+			$content .= "<a href=" . $user->entities->url->urls[0]->expanded_url . ">" .
+								htmlspecialchars($user->entities->url->urls[0]->expanded_url) .
+							"</a><br />";
+		}
+
 		if($user->location != "") {
 			$content .= theme('action_icon',
 			                  "https://maps.google.com/maps?q=" . urlencode($user->location),
