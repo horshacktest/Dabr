@@ -1500,7 +1500,7 @@ function twitter_home_page() {
 		$api_options[since_id]=$_GET['since_id'];
 	}
 
-	$api_options .= "&screen_name={$screen_name}";
+//	$api_options .= "&screen_name={$screen_name}";
 
 	$home_timeline = execute_codebird("statuses_homeTimeline",$api_options);
 
