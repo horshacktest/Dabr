@@ -383,6 +383,10 @@ function get_codebird() {
 }
 
 function execute_codebird($function, $api_options = NULL) {
+	//	Add alt tags
+	//	https://blog.twitter.com/2016/alt-text-support-for-twitter-cards-and-the-rest-api
+	$api_options[include_ext_alt_text]=true;
+
 	try {
 		$cb = get_codebird();
 		$result = $cb->$function($api_options);
@@ -407,7 +411,6 @@ function twitter_get_media($status) {
 
 	//	Get the inline image size
 	$image_size = setting_fetch('dabr_image_size', "medium");
-
 	//	If there are multiple images - or videos / gifs
 	if ($status->extended_entities) {
 		$media_html = "<span class=\"media\">";
@@ -435,11 +438,19 @@ function twitter_get_media($status) {
 			} else {
 				$link = $media->url;
 
-				$width = $media->sizes->$image_size->w;
+				$width  = $media->sizes->$image_size->w;
 				$height = $media->sizes->$image_size->h;
+				$alt    = $media->ext_alt_text;
+
+				if(null != $alt){
+					$alt_output = htmlspecialchars($alt, ENT_QUOTES);
+					$alt_html = ' alt="' . $alt_output .'" title="'. $alt_output .'" ';
+				}
 
 				$media_html .= "<a href=\"" . image_proxy($image) . ":orig\" target=\"" . get_target() . "\" class=\"action\">
-				                  <img src=\"" . image_proxy($image) . ":{$image_size}\" width=\"{$width}\" height=\"{$height}\">
+				                  <img src=\"" . image_proxy($image) . ":{$image_size}\" width=\"{$width}\" height=\"{$height}\"".
+											  $alt_html .
+										">
 				               </a>";
 			}
 		}
@@ -628,7 +639,8 @@ function format_interval($timestamp) {
 function twitter_status_page($query) {
 	$id = (string) $query[1];
 	if (is_numeric($id)) {
-		$api_options = "id={$id}";
+		$api_options = array("id" => $id);
+
 		$status = execute_codebird("statuses_show_ID",$api_options);
 
 		$text = $status->text;	//	Grab the text before it gets formatted
@@ -1180,14 +1192,11 @@ function twitter_retweet($query) {
 }
 
 function twitter_replies_page() {
-	$api_options = "";
-
-	$per_page = setting_fetch('dabr_perPage', 20);
-	$api_options = "count=$per_page";
+	$api_options = array("count" => setting_fetch('dabr_perPage', 20));
 
 	//	If we're paginating through
 	if ($_GET['max_id']) {
-		$api_options .= '&max_id='.$_GET['max_id'];
+		$api_options["max_id"] = $_GET['max_id'];
 	}
 
 	$replies = execute_codebird("statuses_mentionsTimeline",$api_options);
@@ -1199,14 +1208,11 @@ function twitter_replies_page() {
 }
 
 function twitter_retweets_page() {
-	$api_options = "";
-
-	$per_page = setting_fetch('dabr_perPage', 20);
-	$api_options = "count=$per_page";
+	$api_options = array("count" => setting_fetch('dabr_perPage', 20));
 
 	//	If we're paginating through
 	if ($_GET['max_id']) {
-		$api_options .= '&max_id='.$_GET['max_id'];
+		$api_options["max_id"] = $_GET['max_id'];
 	}
 
 	$retweets = execute_codebird("statuses_retweetsOfMe",$api_options);
@@ -1383,16 +1389,14 @@ function twitter_user_page($query) {
 	// If the user has at least one tweet
 	if (isset($user->status)) {
 		// Fetch the timeline early, so we can try find the tweet they're replying to
-		$api_options = "";
-		$per_page = setting_fetch('dabr_perPage', 20);
-		$api_options = "&count={$per_page}";
+		$api_options = array("count" => setting_fetch('dabr_perPage', 20));
 
 		//	If we're paginating through
 		if ($_GET['max_id']) {
-			$api_options .= '&max_id='.$_GET['max_id'];
+			$api_options[max_id] = $_GET['max_id'];
 		}
 
-		$api_options .= "&screen_name={$screen_name}";
+		$api_options[screen_name] = $screen_name;
 
 		$user_timeline = execute_codebird("statuses_userTimeline",$api_options);
 
@@ -1451,16 +1455,14 @@ function twitter_favourites_page($query) {
 		$screen_name = user_current_username();
 	}
 
-	$api_options = "";
-	$per_page = setting_fetch('dabr_perPage', 20);
-	$api_options = "&count={$per_page}";
+	$api_options = array("count" => setting_fetch('dabr_perPage', 20));
 
 	//	If we're paginating through
 	if ($_GET['max_id']) {
-		$api_options .= '&max_id='.$_GET['max_id'];
+		$api_options[max_id]=$_GET['max_id'];
 	}
 
-	$api_options .= "&screen_name={$screen_name}";
+	$api_options[screen_name]=$screen_name;
 
 	$favorites_list = execute_codebird("favorites_list",$api_options);
 	$tl = twitter_standard_timeline($favorites_list, 'favourites');
@@ -1487,18 +1489,15 @@ function twitter_mark_favourite_page($query) {
 
 function twitter_home_page() {
 	user_ensure_authenticated();
-
-	$api_options = "";
-	$per_page = setting_fetch('dabr_perPage', 20);
-	$api_options = "&count={$per_page}";
+	$api_options = array("count" => setting_fetch('dabr_perPage', 20));
 
 	//	If we're paginating through
 	if ($_GET['max_id']) {
-		$api_options .= '&max_id='.$_GET['max_id'];
+		$api_options[max_id]=$_GET['max_id'];
 	}
 
 	if ($_GET['since_id']) {
-		$api_options .= '&since_id='.$_GET['since_id'];
+		$api_options[since_id]=$_GET['since_id'];
 	}
 
 	$api_options .= "&screen_name={$screen_name}";
@@ -1601,7 +1600,7 @@ function preg_match_one($pattern, $subject, $flags = null) {
 }
 
 function twitter_user_info($username = null) {
-	$api_options = "screen_name={$username}";
+	$api_options = array("screen_name" => $username);
 	$user_info = execute_codebird("users_show",$api_options);
 	return $user_info;
 }
