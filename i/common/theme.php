@@ -402,7 +402,6 @@ function theme_retweet($status)
 }
 function theme_user_header($user) {
 	$friendship = friendship($user->screen_name);
-
 	$followed_by = $friendship->relationship->target->followed_by; //The $user is followed by the authenticating
 	$following = $friendship->relationship->target->following;
 	$name = theme('full_name', $user);
@@ -441,6 +440,14 @@ function theme_user_header($user) {
             			</span>
             		</span>
    					<div class='features'>";
+
+	//	Add blocking / dm info to the user object.
+	$user->can_dm        = $friendship->relationship->source->can_dm;
+	$user->blocking      = $friendship->relationship->source->blocking;
+	$user->blocked_by    = $friendship->relationship->source->blocked_by;
+	$user->muting        = $friendship->relationship->source->muting;
+	$user->want_retweets = $friendship->relationship->source->want_retweets;
+
 	$out .= theme_user_info($user);
 	$out .= "</div>
 			</div>";
@@ -485,20 +492,20 @@ function theme_user_info($user) {
 						"</a>";
 
 	//	Blocking and Muting are not always returned. Here's the hacky way to get it.
-	if ($user->muting === null)
-	{
-		//	Too many API calls. Slow and inefficient
-		// $friendship = friendship($user->screen_name);
-		$muting    = null; //$friendship->relationship->source->muting;
-		$blocking  = null; //$friendship->relationship->source->blocking;
-		$messaging = null; //$friendship->relationship->source->can_dm;
-		$retweets  = null; //$friendship->relationship->source->want_retweets;
-	} else {
+	// if ($user->muting === null)
+	// {
+	// 	//	Too many API calls. Slow and inefficient
+	// 	// $friendship = friendship($user->screen_name);
+	// 	$muting    = null; //$friendship->relationship->source->muting;
+	// 	$blocking  = null; //$friendship->relationship->source->blocking;
+	// 	$messaging = null; //$friendship->relationship->source->can_dm;
+	// 	$retweets  = null; //$friendship->relationship->source->want_retweets;
+	// } else {
 		$muting    = $user->muting;
 		$blocking  = $user->blocking;
-		$messaging = false; //$user->following;	//	Is the authenticated user being followed by the listed user.
-		$retweets  = true; //	Can assume that Retweets haven't been hidden?
-	}
+		$messaging = $user->can_dm;//false; //$user->following;	//	Is the authenticated user being followed by the listed user.
+		$retweets  = $user->want_retweets;//true; //	Can assume that Retweets haven't been hidden?
+	// }
 
 	if($muting)
 	{
