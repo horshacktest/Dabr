@@ -405,7 +405,7 @@ function execute_codebird($function, $api_options = NULL) {
 //	http://dev.twitter.com/pages/tweet_entities
 function twitter_get_media($status) {
 	//don't display images if: a) in the settings, b) NSFW
-	if(setting_fetch('dabr_hide_inline') || stripos($status->text, 'NSFW') !== false) {
+	if(setting_fetch('dabr_show_inline') !== 'yes' || stripos($status->text, 'NSFW') !== false) {
 		return;
 	}
 

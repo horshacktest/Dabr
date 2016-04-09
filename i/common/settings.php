@@ -26,6 +26,7 @@ $fonts = array( //ID => Value
 					'Ubuntu+Mono:500' => 'Ubuntu Mono',
 					'Karma:500'       => 'Karma',
 					'Open+Sans:400'   => 'Open Sans',
+					''                => 'Default'
 				);
 
 menu_register(array(
@@ -154,15 +155,6 @@ function settings_page($args) {
 		'1.5'	=> _(FONT_LARGE),
 		'2'	=> _(FONT_HUGE),
 	);
-
-	// $fonts = array( //ID => Value
-	// 					'Schoolbell'	=> 'Schoolbell',
-	// 					'Raleway'	=> 'Raleway',
-	// 					'Ubuntu+Mono'	=> 'Ubuntu Mono',
-	// 					'Karma'			=> 'Karma',
-	// 					'Open+Sans'=> 'Open Sans',
-	// 					'aaaaa'			=> 'bbbb',
-	// 				);
 
 	$utc_offset = setting_fetch('dabr_utc_offset', 0);
 	//	returning 401 as it calls http://api.twitter.com/1/users/show.json?screen_name= (no username???)

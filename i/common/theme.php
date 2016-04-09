@@ -654,7 +654,7 @@ function theme_timeline($feed, $paginate = true) {
 			$quoted = "";
 		}
 
-		if ("yes" != setting_fetch('dabr_hide_avatars')) {
+		if ("yes" == setting_fetch('dabr_show_avatars','yes')) {
 			$avatar = theme('avatar', theme_get_avatar($status->from));
 		}
 
