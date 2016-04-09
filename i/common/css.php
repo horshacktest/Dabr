@@ -207,6 +207,10 @@ small,small a{
 	height:auto;
 }
 
+figure{
+	margin:0;
+}
+
 .date{
 	padding:0.5em;
 	font-size:0.8em;

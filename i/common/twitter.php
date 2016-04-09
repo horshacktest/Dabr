@@ -444,7 +444,8 @@ function twitter_get_media($status) {
 
 				if(null != $alt){
 					$alt_output = htmlspecialchars($alt, ENT_QUOTES);
-					$alt_html = ' alt="' . $alt_output .'" title="'. $alt_output .'" ';
+					$alt_html = ' alt="' . $alt_output .'" ';
+					$media_html .= "<figure>";
 				}
 
 				$media_html .= "<a href=\"" . image_proxy($image) . ":orig\" target=\"" . get_target() . "\" class=\"action\">
@@ -452,6 +453,11 @@ function twitter_get_media($status) {
 											  $alt_html .
 										">
 				               </a>";
+				if(null != $alt){
+					$media_html .= "<figcaption aria-hidden=\"true\"><small>{$alt_output}</small></figcaption>
+					</figure>";
+				}
+
 			}
 		}
 		$media_html .= "</span>";
