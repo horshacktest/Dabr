@@ -268,7 +268,7 @@ function theme_directs_form($to) {
 function theme_status_form($text = '', $in_reply_to_id = null) {
 
 	if (user_is_authenticated()) {
-		$icon = "";//"images/twitter-bird-16x16.png";
+		$icon = "🐦";//"images/twitter-bird-16x16.png";
 
 		//	adding ?status=foo will automatically add "foo" to the text area.
 		if ($_GET['status'])
@@ -279,14 +279,16 @@ function theme_status_form($text = '', $in_reply_to_id = null) {
 		if ('yes' == setting_fetch('dabr_show_icons','yes'))
 		{
 			$camera = "📷";
+			$icon_class = 'class="icons"';
 		} else {
 			$camera = _(ICONS_CAMERA);
+			$icon_class = '';
 		}
 
       $output = '
 	      <form method="post" action="update" enctype="multipart/form-data">
             <fieldset>
-               <legend><span class="icons" id="twitterbird">'.$icon.'</span>'._(STATUS_BOX).'</legend>
+               <legend><span '.$icon_class.' id="twitterbird">'.$icon.'</span>'._(STATUS_BOX).'</legend>
                <textarea id="status" name="status" rows="4" class="statusbox">'.$text.'</textarea>
                <div>
                   <input name="in_reply_to_id" value="'.$in_reply_to_id.'" type="hidden" />
@@ -297,7 +299,7 @@ function theme_status_form($text = '', $in_reply_to_id = null) {
                      <label for="geoloc" id="lblGeo"></label>
                   </span>
                </div>
-               <span class="icons" style="float:right;">'.$camera.'</span>
+               <span '.$icon_class.' style="float:right;">'.$camera.'</span>
                <div class="fileinputs">
 						<input type="file" accept="image/*,video/mp4" name="image" class="file" id="file" />
 					</div>
@@ -957,7 +959,14 @@ function theme_action_icons($status) {
 	//Search for @ to a user
 	$actions[] = theme('action_icon',"search?query=%40{$from}",'🔍',_(SEARCH_BUTTON));
 
-	return '<span class="actionicons">' . implode('&emsp;', $actions) . '</span>';
+	if ('yes' == setting_fetch('dabr_show_icons','yes'))
+	{
+		$icon_class = 'class="actionicons"';
+	} else {
+		$icon_class = 'class="action-text"';
+	}
+
+	return '<span '.$icon_class.'>' . implode('&emsp;', $actions) . '</span>';
 }
 
 function theme_action_icon($url, $display, $text) {
@@ -966,7 +975,7 @@ function theme_action_icon($url, $display, $text) {
 	if ('yes' !== setting_fetch('dabr_show_icons','yes'))
 	{
 		$display = $text;
-		$class = "action-text";
+		$class = "";
 	} else {
 		$class = "action";
 	}

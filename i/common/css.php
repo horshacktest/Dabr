@@ -81,8 +81,13 @@ textarea {
 	font-size: 1.2em;
 	text-decoration: none;
 }
-.actionicons .action-text {
+
+.action-text {
+	display: block;
+	margin: 0.3em;
+	clear: both;
 	font-size:0.9em;
+	text-decoration: none;
 }
 
 .icons {
@@ -134,19 +139,19 @@ small,small a{
 	padding: 0.2em;
 	font-family:icons,sans-serif;
 	font-size: 1.75em;
-	width:95%;
+	width:99%;
 }
 
 .menu-text{
 	background:#{$c->menu_background};
 	font-family:sans-serif;
-	width:95%;
+	width:99%;
 }
 
 .menu-float {
 	position:fixed;
 	z-index:1;
-	width:100%;
+	width:99%;
 }
 
 .menu a{
