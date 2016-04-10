@@ -421,11 +421,6 @@ function theme_user_header($user) {
 	            <span class='avatar'>".theme('external_link', $full_avatar, theme('avatar', theme_get_avatar($user)))."</span>
 	            <span class='status shift'><b>{$name}</b><br/>
 	               <span class='about'>";
-
-	if ($user->protected == true) {
-		$out .=       '<strong>'._(PRIVATE_TWEETS).'</strong><br />';
-	}
-
 	$out .=				_(PROFILE_BIO). ": {$bio}<br />".
                      _(PROFILE_LINK).": {$link}<br />
                      <span class='icons'>⌖</span>
@@ -734,7 +729,7 @@ function theme_timeline($feed, $paginate = true) {
 
 function theme_full_name($user) {
 
-	//	Link to the screen name but display as "Ms E Xample (@Example"
+	//	Link to the screen name but display as "Ms E Xample (@Example)"
 	if ($user->name == $user->screen_name || null == $user->name)
 	{
 		$name = "@<a href='{$user->screen_name}'>{$user->screen_name}</a>";
@@ -747,6 +742,13 @@ function theme_full_name($user) {
 	{
 		$name .= " " . theme('action_icon', "", '✔', _(VERIFIED));
 	}
+
+	//	Add the lock if the user is private
+	if($user->protected)
+	{
+		$name .= " " . theme('action_icon', "", '🔒', _(PRIVATE_TWEETS));
+	}
+
 
 	return $name;
 }
