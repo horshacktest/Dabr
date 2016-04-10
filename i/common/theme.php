@@ -557,9 +557,13 @@ function theme_user_info($user) {
 	return $out;
 }
 
-function theme_avatar($url, $force_large = false) {
-	$size = 48;	//$force_large ? 48 : 24;
-	return "<img src='$url' height='$size' width='$size' />";
+function theme_avatar($url) {
+	if ("yes" == setting_fetch('dabr_show_avatars','yes')) {
+		$size = 48;
+		return "<img src='$url' height='$size' width='$size' />";
+	} else {
+		return "";
+	}
 }
 
 function theme_status_time_link($status, $is_link = true) {
@@ -654,9 +658,7 @@ function theme_timeline($feed, $paginate = true) {
 			$quoted = "";
 		}
 
-		if ("yes" == setting_fetch('dabr_show_avatars','yes')) {
-			$avatar = theme('avatar', theme_get_avatar($status->from));
-		}
+		$avatar = theme('avatar', theme_get_avatar($status->from));
 
 		$source = "";
 
