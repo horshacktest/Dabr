@@ -1,6 +1,6 @@
 <?php
-require 'Autolink.php';
-require 'Extractor.php';
+require_once 'Autolink.php';
+require_once 'Extractor.php';
 require 'lists.php';
 
 menu_register(array(
@@ -495,68 +495,47 @@ function twitter_parse_tags($input, $entities = false, $rel = false) {
 
 	// Use the Entities to replace hyperlink URLs
 	// http://dev.twitter.com/pages/tweet_entities
-	if($entities) {
-		if($entities->urls) {
-			foreach($entities->urls as $urls) {
-				if($urls->expanded_url != "") {
-					$display_url = $urls->expanded_url;
-				}
-				else {
-					$display_url = $urls->url;
-				}
-
-				//$url = $urls->url;
-				//	Stop Invasive monitoring of URLs
-				$url = $urls->expanded_url;
-				$parsed_url = parse_url($url);
-
-				if (empty($parsed_url['scheme'])) {
-					$url = 'http://' . $url;
-				}
-
-				if (setting_fetch('dabr_gwt') == 'on') { // If the user wants links to go via GWT
-					$encoded = urlencode($url);
-					$link = "http://google.com/gwt/n?u={$encoded}";
-				}
-				else {
-					$link = $url;
-				}
-
-				if ($rel) {
-					$rel = " rel='{$rel}'";
-				} else {
-					$rel = '';
-				}
-
-				$link_html = '<a href="' . $link . '" target="' . get_target() . '"' . $rel .'>' . $display_url . '</a>';
-				$url = $urls->url;
-
-				// Replace all URLs *UNLESS* they have already been linked (for example to an image)
-				$pattern = '#((?<!href\=(\'|\"))'.preg_quote($url,'#').')#i';
-				$out = preg_replace($pattern,  $link_html, $out);
+	if($entities->urls) {
+		foreach($entities->urls as $urls) {
+			if($urls->expanded_url != "") {
+				$display_url = str_replace ( "@", "%40", htmlentities($urls->expanded_url, ENT_QUOTES));
 			}
-		}
-
-		if($entities->hashtags) {
-			foreach($entities->hashtags as $hashtag) {
-				$text = $hashtag->text;
-				$pattern = '/(^|\s)([#＃]+)('. $text .')/iu';
-				$link_html = ' <a href="hash/' . $text . '">#' . $text . '</a> ';
-				$out = preg_replace($pattern,  $link_html, $out, 1);
+			else {
+				$display_url = str_replace ( "@", "%40", htmlentities($urls->url, ENT_QUOTES));
 			}
-		}
 
-		if($entities->media) {
-			foreach($entities->media as $media) {
-				$url = $media->url;
-				$pattern = '#((?<!href\=(\'|\"))'.preg_quote($url,'#').')#i';
-				$link_html = "<a href='{$media->url}' target='" . get_target() . "'>{$media->display_url}</a>";
-				$out = preg_replace($pattern,  $link_html, $out, 1);
+			//$url = $urls->url;
+			//	Stop Invasive monitoring of URLs
+			$url = $urls->expanded_url;
+			$parsed_url = parse_url($url);
+
+			if (empty($parsed_url['scheme'])) {
+				$url = 'http://' . $url;
 			}
-		}
 
-	}
-	else {  // If Entities haven't been returned (usually because of search or a bio) use Autolink
+			if (setting_fetch('dabr_gwt') == 'on') { // If the user wants links to go via GWT
+				$encoded = urlencode($url);
+				$link = "http://google.com/gwt/n?u={$encoded}";
+			}
+			else {
+				//	URL Encode the `@` so that it isn't mistaken for a mention
+				$link = str_replace ( "@", "%40", $url);
+			}
+
+			if ($rel) {
+				$rel = " rel='{$rel}'";
+			} else {
+				$rel = '';
+			}
+
+			$link_html = '<a href="' . $link . '" target="' . get_target() . '"' . $rel .'>' . $display_url . '</a>';
+			$url = $urls->url;
+
+			// Replace all URLs *UNLESS* they have already been linked (for example to an image)
+			$pattern = '#((?<!href\=(\'|\"))'.preg_quote($url,'#').')#i';
+			$out = preg_replace($pattern,  $link_html, $out);
+		}
+	}	else {  // If Entities haven't been returned (usually because of search or a bio) use Autolink
 		// Create an array containing all URLs
 		$urls = Twitter_Extractor::create($input)
 				->extractURLs();
@@ -574,18 +553,38 @@ function twitter_parse_tags($input, $entities = false, $rel = false) {
 			$out = Twitter_Autolink::create($out)
 					->addLinksToURLs();
 		}
+	}
 
+	if($entities->hashtags) {
+		foreach($entities->hashtags as $hashtag) {
+			$text = $hashtag->text;
+			$pattern = '/(^|\s)([#＃]+)('. $text .')/iu';
+			$link_html = ' <a href="hash/' . $text . '">#' . $text . '</a> ';
+			$out = preg_replace($pattern,  $link_html, $out, 1);
+		}
+	} else {
 		// Hyperlink the #
 		$out = Twitter_Autolink::create($out)
 				->setTarget('')
 				->addLinksToHashtags();
 	}
 
-	// Hyperlink the @ and lists
+	if($entities->media) {
+		foreach($entities->media as $media) {
+			$url = $media->url;
+			$pattern = '#((?<!href\=(\'|\"))'.preg_quote($url,'#').')#i';
+			$link_html = "<a href='{$media->url}' target='" . get_target() . "'>{$media->display_url}</a>";
+			$out = preg_replace($pattern,  $link_html, $out, 1);
+		}
+	}
+
+	//	Hyperlink the @ and lists
 	$out = Twitter_Autolink::create($out)
 			->setTarget('')
 			->addLinksToUsernamesAndLists();
-
+	$out = Twitter_Autolink::create($out)
+			->setTarget('')
+			->addLinksToCashtags();
 	// Emails
 	$tok = strtok($out, " \n\t\n\r\0");	// Tokenise the string by whitespace
 
@@ -1074,6 +1073,15 @@ function twitter_update() {
 	//	Was this request sent by POST?
 	twitter_ensure_post_action();
 
+	//	Remove extra whitespace
+	$status_text = trim($_POST['status']);
+
+	//	If the user is trying to tweet someone who has blocked them
+	if (twitter_block_check($status_text)){
+		theme('error', "<h2>"._(ERROR)."</h2>".
+					"<p>"._(ERROR_BLOCKED)."</p>");
+	}
+
 	$api_options  = array();
 
 	//	Upload the image (if there is one) first
@@ -1122,12 +1130,6 @@ function twitter_update() {
 			    'media_id'      => $media_id
 			]);
 
-			// var_dump($reply);
-
-			// if ($reply->httpstatus < 200 || $reply->httpstatus > 299) {
-			//     die();
-			// }
-
 			// Now use the media_id in a tweet
 			$api_options['media_ids'] = $media_id;
 
@@ -1158,9 +1160,6 @@ function twitter_update() {
 		}
 	}
 
-	//	Remove extra whitespace
-	$status_text = trim($_POST['status']);
-
 	if ($status_text) {
 		//	Ensure that the text is properly escaped
 		$api_options["status"] = $status_text;
@@ -1185,6 +1184,26 @@ function twitter_update() {
 		$reply = execute_codebird("statuses_update",$api_options);
 	}
 	twitter_refresh($_POST['from'] ? $_POST['from'] : '');
+}
+
+function twitter_block_check($text) {
+	//	Check that the user is not trying to Tweet a user who has blocked them
+	// https://api.twitter.com/1.1/friendships/show.json?target_screen_name=flamelinks
+
+	$found = Twitter_Extractor::create($text)
+		->extractMentionedUsernames();
+	$to_users = array_unique($found);
+
+	foreach ($to_users as $user) {
+		$api_options = array("target_screen_name" => $user);
+		$relationship = execute_codebird("friendships_show",$api_options);
+
+		if ($relationship->relationship->source->blocked_by)
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 function twitter_retweet($query) {
@@ -1506,8 +1525,6 @@ function twitter_home_page() {
 		$api_options[since_id]=$_GET['since_id'];
 	}
 
-//	$api_options .= "&screen_name={$screen_name}";
-
 	$home_timeline = execute_codebird("statuses_homeTimeline",$api_options);
 
 	$tl = twitter_standard_timeline($home_timeline, 'friends');
@@ -1637,34 +1654,22 @@ function twitter_is_reply($status) {
 	}
 
 	// If there are no entities (for example on a search) do a simple regex
-	$found = Twitter_Extractor::create($status->text)->extractMentionedUsernames();
-	foreach($found as $mentions)
-	{
-		// Case insensitive compare
-		if (strcasecmp($mentions, $user) == 0)
-		{
-			return true;
-		}
-	}
+	// $found = Twitter_Extractor::create($status->text)->extractMentionedUsernames();
+	// foreach($found as $mentions)
+	// {
+	// 	// Case insensitive compare
+	// 	if (strcasecmp($mentions, $user) == 0)
+	// 	{
+	// 		return true;
+	// 	}
+	// }
 	return false;
-}
-
-function pluralise($word, $count, $show = false) {
-	if($show) $word = number_format($count) . " {$word}";
-	return $word . (($count != 1) ? 's' : '');
 }
 
 function is_64bit() {
 	$int = "9223372036854775807";
 	$int = intval($int);
 	return ($int == 9223372036854775807);
-}
-
-function x_times($count) {
-	if($count == 1) return 'once';
-	if($count == 2) return 'twice';
-	if(is_int($count)) return number_format($count) . ' times';
-	return $count . ' times';
 }
 
 function image_proxy($src, $size = "") {

@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Dabr\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2015-12-25 02:11+0100\n"
+"PO-Revision-Date: 2016-04-12 19:14+0100\n"
 "Last-Translator: Terence Eden <dabr-i18n@shkspr.mobi>\n"
 "Language-Team: English <dabr-i18n@shkspr.mobi>\n"
 "MIME-Version: 1.0\n"
@@ -103,6 +103,9 @@ msgstr "Invalid HTTP request method for this action."
 
 msgid "ERROR_VIDEO"
 msgstr "Your browser does not support playing video."
+
+msgid "ERROR_BLOCKED"
+msgstr "You are not permitted to send that message."
 
 msgid "ARE_YOU_SURE_UNBLOCK"
 msgstr "Are you sure you want to <strong>Unblock @%s</strong>?"
