@@ -1088,7 +1088,6 @@ function twitter_update() {
 	if ($_FILES['image']['tmp_name']) {
 
 		$finfo = finfo_open(FILEINFO_MIME_TYPE);
-
 		if (finfo_file($finfo, $_FILES['image']['tmp_name']) == "video/mp4") {	//	For Videos
 			$file       = $_FILES['image']['tmp_name'];
 			$size_bytes = filesize($file);
@@ -1111,7 +1110,7 @@ function twitter_update() {
 			while (! feof($fp)) {
 			    $chunk = fread($fp, 1048576); // 1MB per chunk for this sample
 
-			    $reply =execute_codebird("media_upload",[
+			    $reply = execute_codebird("media_upload",[
 			        'command'       => 'APPEND',
 			        'media_id'      => $media_id,
 			        'segment_index' => $segment_id,
@@ -1731,9 +1730,12 @@ function twitter_api_status(&$response) {
 							"<p>".sprintf(_(ERROR_TWITTER_MESSAGE), $error_message, $error_code)."</p>",
 						$response, $_POST);
 			default:
-				theme('error', "<h2>"._(ERROR)."</h2>".
-							"<p>".sprintf(_(ERROR_TWITTER_MESSAGE), $error_message, $error_code)."</p>",
-						$response, $_POST);
+				// theme('error', "<h2>"._(ERROR)."</h2>".
+				// 			"<p>".sprintf(_(ERROR_TWITTER_MESSAGE), $error_message, $error_code)."</p>",
+				// 		$response, $_POST);
+				//	No status is returned for video uploads.
+				unset($response->httpstatus);	//	A-OK
+				return;
 		}
 	}
 }
