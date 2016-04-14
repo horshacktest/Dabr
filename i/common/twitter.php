@@ -390,15 +390,25 @@ function execute_codebird($function, $api_options = NULL) {
 	try {
 		$cb = get_codebird();
 		$result = $cb->$function($api_options);
+		if($result->errors) {
+			//	Twitter returned an error to be displayed to the user.
+			$error_message = $result->errors[0]->message;
+			$error_code = $result->errors[0]->code;
+			theme('error', "<h2>"._(ERROR)."</h2>".
+						"<p>".sprintf(_(ERROR_TWITTER_MESSAGE), $error_message, $error_code)."</p>");
+			die();
+		}
 		twitter_api_status($result);
 		return $result;
 	} catch (Exception $e) {
+		//	General error occurred
 		theme('error',
 				"<div class=\"tweet\">".
 					"<h2>"._(ERROR)."</h2>".
 					"<pre>".sprintf(_(ERROR_TWITTER_MESSAGE), $e->getMessage(), $e->getCode())."</pre>".
 				"</div>"
 				);
+		die();
 	}
 }
 
