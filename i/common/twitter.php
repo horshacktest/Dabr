@@ -433,19 +433,42 @@ function twitter_get_media($status) {
 				$image = $media->media_url;
 			}
 
-			if ($media->type == "video" || $media->type == "animated_gif") {
-
-				$media_html .= "<video controls loop class=\"embedded\" poster=\"" . image_proxy($image) . "\">";
-
-				//	Array is reversed in the hope that the highest resolution video is at the end
-				foreach (array_reverse($media->video_info->variants) as $vid) {
-					$video_url = $vid->url;
+			if ($media->type == "video") {
+				//	Find the m3u8
+				foreach ($media->video_info->variants as $vid) {
 					$video_type = $vid->content_type;
-					$media_html .= "<source src=\"" . image_proxy($video_url) . "\" type=\"{$video_type}\">";
+					if ("application/x-mpegURL" == $video_type) {
+						$video_url = $vid->url;
+						$media_html .= "<video id=\"vid-".$status->id_str."\" controls poster=\"".image_proxy($image)."\">";
+						$media_html .= 	"<source src=\"" . image_proxy($video_url) . "\" type=\"{$video_type}\">";
+						$media_html .= _(ERROR_VIDEO) . "</video>";
+						$media_html .= "<script>
+											  if(Hls.isSupported()) {
+											    var video = document.getElementById('vid-".$status->id_str."');
+											    var hls = new Hls();
+											    hls.loadSource('".$video_url."');
+											    hls.attachMedia(video);
+											    hls.on(Hls.Events.MANIFEST_PARSED,function() {
+											  });
+											 }
+											</script>";
+					}
 				}
 
+
+
+			} elseif ($media->type == "animated_gif") {
+				//	Animated GIF
+
+				$video_type = $media->video_info->variants[0]->content_type;
+				$video_url  = $media->video_info->variants[0]->url;
+				$media_html .= "<video id=\"vid-".$status->id_str."\" controls loop autoplay poster=\"".image_proxy($image)."\">";
+				$media_html .= 	"<source src=\"" . image_proxy($video_url) . "\" type=\"{$video_type}\">";
 				$media_html .= _(ERROR_VIDEO) . "</video>";
+
+
 			} else {
+				//	Normal image
 				$link = $media->url;
 
 				$width  = $media->sizes->$image_size->w;

@@ -179,7 +179,8 @@ function theme_page($title, $content) {
 						<!--[if IE]><link rel="shortcut icon" href="favicon.ico"><![endif]-->
 						<link rel="apple-touch-icon" href="i/images/apple-touch-icon.png">
 						<link rel="icon" href="i/images/favicon.png">
-						<link href="widgets" rel="stylesheet">';
+						<link href="widgets" rel="stylesheet">
+						<script src="https://cdn.jsdelivr.net/hls.js/latest/hls.min.js"></script>';
 
 	if ($title == _(SETTINGS_TITLE))
 	{

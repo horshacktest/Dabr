@@ -257,6 +257,11 @@ figure{
 	padding-left: 1em;
 	padding-right:1em;
 }
+
+video {
+	max-width:100%;
+	height:auto;
+}
 ";
 
 header('Content-Type: text/css; charset=utf-8');
