@@ -548,7 +548,7 @@ function twitter_parse_tags($input, $entities = false, $rel = false) {
 
 			if (setting_fetch('dabr_gwt') == 'on') { // If the user wants links to go via GWT
 				$encoded = urlencode($url);
-				$link = "http://google.com/gwt/n?u={$encoded}";
+				$link = "https://googleweblight.com/?lite_url={$encoded}";
 			}
 			else {
 				//	URL Encode the `@` so that it isn't mistaken for a mention
