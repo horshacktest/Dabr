@@ -23,7 +23,7 @@ function oembed_embed_thumbnails(&$feed)
 {
 	foreach($feed as &$status)
 	{ // Loop through the feed
-		if(stripos($status->text, 'NSFW') === FALSE)
+		if(stripos($status->full_text, 'NSFW') === FALSE)
 		{ // Ignore image fetching for tweets containing NSFW
 			if ($status->entities)
 			{ // If there are entities

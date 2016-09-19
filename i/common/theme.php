@@ -351,7 +351,7 @@ function theme_status($status) {
 
 function theme_retweet($status)
 {
-	$text = "RT @{$status->user->screen_name}: {$status->text}";
+	$text = "RT @{$status->user->screen_name}: {$status->full_text}";
 	$screen_name = $status->user->screen_name;
 	$id = $status->id_str;
 	$length = function_exists('mb_strlen') ? mb_strlen($text,'UTF-8') : strlen($text);
@@ -594,7 +594,11 @@ function theme_timeline($feed, $paginate = true) {
 
 	// Add the hyperlinks *BEFORE* adding images
 	foreach ($feed as &$status)	{
-		$status->text = twitter_parse_tags($status->text, $status->entities);
+		if ($status->full_text){
+			$status->full_text = twitter_parse_tags($status->full_text, $status->entities);
+		} else {
+			$status->text = twitter_parse_tags($status->text, $status->entities);
+		}
 	}
 
 	unset($status);
@@ -638,7 +642,12 @@ function theme_timeline($feed, $paginate = true) {
 			$retweeted = "";
 		}
 
-		$text = $status->text;
+		if ($status->full_text) {
+			$text = $status->full_text;
+		} else {
+			$text = $status->text;
+		}
+
 		if ("yes" != setting_fetch('dabr_hide_inline')) {
 			$media = twitter_get_media($status);
 
@@ -783,7 +792,7 @@ function theme_no_tweets() {
 function theme_search_results($feed) {
 	$rows = array();
 	foreach ($feed->results as $status) {
-		$text = twitter_parse_tags($status->text, $status->entities);
+		$text = twitter_parse_tags($status->full_text, $status->entities);
 		$link = theme('status_time_link', $status);
 		$actions = theme('action_icons', $status);
 

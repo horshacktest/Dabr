@@ -387,10 +387,17 @@ function execute_codebird($function, $api_options = NULL) {
 	//	https://blog.twitter.com/2016/alt-text-support-for-twitter-cards-and-the-rest-api
 	$api_options[include_ext_alt_text]=true;
 
+	//	Add Long Text Supported
+	//	https://dev.twitter.com/overview/api/upcoming-changes-to-tweets
+	$api_options[tweet_mode]=extended;
+
 	try {
 		$cb = get_codebird();
 		$result = $cb->$function($api_options);
 		if($result->errors) {
+			var_export($result);
+			var_export($api_options);
+			die();
 			//	Twitter returned an error to be displayed to the user.
 			$error_message = $result->errors[0]->message;
 			$error_code = $result->errors[0]->code;
@@ -401,7 +408,7 @@ function execute_codebird($function, $api_options = NULL) {
 		twitter_api_status($result);
 		return $result;
 	} catch (Exception $e) {
-		//	General error occurred
+		//	General error occurred$api_options
 		theme('error',
 				"<div class=\"tweet\">".
 					"<h2>"._(ERROR)."</h2>".
@@ -415,7 +422,7 @@ function execute_codebird($function, $api_options = NULL) {
 //	http://dev.twitter.com/pages/tweet_entities
 function twitter_get_media($status) {
 	//don't display images if: a) in the settings, b) NSFW
-	if(setting_fetch('dabr_show_inline','yes') !== 'yes' || stripos($status->text, 'NSFW') !== false) {
+	if(setting_fetch('dabr_show_inline','yes') !== 'yes' || stripos($status->full_text, 'NSFW') !== false) {
 		return;
 	}
 
@@ -682,7 +689,7 @@ function twitter_status_page($query) {
 
 		$status = execute_codebird("statuses_show_ID",$api_options);
 
-		$text = $status->text;	//	Grab the text before it gets formatted
+		$text = $status->full_text;	//	Grab the text before it gets formatted
 
 		$content = theme('status', $status);
 
@@ -890,7 +897,7 @@ function twitter_confirmation_page($query)
 
 			$content = '<p>'._(ARE_YOU_SURE_DELETE).'</p>';
 			$content .= "<ul>
-			                 <li>{$status->text}</li>
+			                 <li>{$status->full_text}</li>
 			                 <li>"._(NO_UNDO)."</li>
 			            </ul>";
 			break;
@@ -1097,7 +1104,7 @@ function twitter_retweeters_page($query) {
 	$title = sprintf(_(RETWEET_LIST),"{$status->user->screen_name}");
 
 	$content =  "<h2>{$title}</h2>";
-	$content .= "<p>".twitter_parse_tags($status->text)."</p>";
+	$content .= "<p>".twitter_parse_tags($status->full_text)."</p>";
 	$content .= theme('users_list', $users);
 
 	theme('page', $title, $content);
@@ -1196,6 +1203,8 @@ function twitter_update() {
 	if ($status_text) {
 		//	Ensure that the text is properly escaped
 		$api_options["status"] = $status_text;
+		//	https://dev.twitter.com/overview/api/upcoming-changes-to-tweets
+		$api_options["auto_populate_reply_metadata"] = true;
 
 		//	Is this a reply?
 		$in_reply_to_id = (string) $_POST['in_reply_to_id'];
@@ -1687,7 +1696,7 @@ function twitter_is_reply($status) {
 	}
 
 	// If there are no entities (for example on a search) do a simple regex
-	// $found = Twitter_Extractor::create($status->text)->extractMentionedUsernames();
+	// $found = Twitter_Extractor::create($status->full_text)->extractMentionedUsernames();
 	// foreach($found as $mentions)
 	// {
 	// 	// Case insensitive compare
