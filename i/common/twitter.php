@@ -395,9 +395,9 @@ function execute_codebird($function, $api_options = NULL) {
 		$cb = get_codebird();
 		$result = $cb->$function($api_options);
 		if($result->errors) {
-			// var_export($result);
-			// var_export($api_options);
-			// die();
+			var_export($result);
+			var_export($api_options);
+			die();
 			//	Twitter returned an error to be displayed to the user.
 			$error_message = $result->errors[0]->message;
 			$error_code = $result->errors[0]->code;
@@ -1206,7 +1206,9 @@ function twitter_update() {
 		//	https://dev.twitter.com/overview/api/upcoming-changes-to-tweets
 		$api_options["auto_populate_reply_metadata"] = true;
 
-		$api_options["attachment_url"] = $_POST['attachment_url'];
+		if ($_POST['attachment_url']) {
+			$api_options["attachment_url"] = $_POST['attachment_url'];
+		}
 
 		//	Is this a reply?
 		$in_reply_to_id = (string) $_POST['in_reply_to_id'];
