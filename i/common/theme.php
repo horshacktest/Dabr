@@ -59,6 +59,7 @@ function theme_info($info) {
 
 function theme_table($headers, $rows, $attributes = null) {
 	$out = '<div'.theme_attributes($attributes).'>';
+
 	if (count($headers) > 0) {
 		// $out .= '<thead><tr>';
 		foreach ($headers as $cell) {
@@ -1004,11 +1005,18 @@ function theme_users_list($feed, $hide_pagination = false) {
 	else
 		$users = $feed;
 	$rows = array();
+
 	if (count($users) == 0 || $users == '[]') return '<p>'._(NO_USERS_FOUND).'</p>';
 
 	foreach($users as $user) {
 		$content = "";
-		if($user->user) $user = $user->user;
+		if($user->user) {
+			$user = $user->user;
+		} else {
+			// echo "it has gone wrong";
+			// var_export($user);
+			// die();
+		}
 		$name = theme('full_name', $user);
 		$tweets_per_day = twitter_tweets_per_day($user);
 		$last_tweet = strtotime($user->status->created_at);
@@ -1052,6 +1060,7 @@ function theme_users_list($feed, $hide_pagination = false) {
 	}
 
 	$content = theme('table', array(), $rows, array('class' => 'followers'));
+
 	if (!$hide_pagination)
 		#$content .= theme('pagination');
 		$content .= theme('list_pagination', $feed);
