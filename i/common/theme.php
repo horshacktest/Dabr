@@ -376,8 +376,9 @@ function theme_retweet($status)
 							max-width: 400px;'
 							rows='5'
 							id='status'></textarea>
-						<br/>
-						<input type='submit' value='"._(RETWEET_COMMENT)."' />
+						<br/>" .
+						"<blockquote class='embedded-tweet'>" . theme('status', $status) . "</blockquote>" .
+						"<input type='submit' value='"._(RETWEET_COMMENT)."' />
 						<span id='status-remaining'>" . (140 - $length) ."</span>
 					</form>
 					<hr />";
