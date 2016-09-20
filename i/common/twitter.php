@@ -523,7 +523,7 @@ function twitter_get_media($status) {
 }
 
 function twitter_parse_tags($input, $entities = false, $rel = false) {
-
+	//Linebreaks.  Some clients insert \n for formatting.
 	$out =  nl2br($input);
 
 	// Use the Entities to replace hyperlink URLs
@@ -592,7 +592,7 @@ function twitter_parse_tags($input, $entities = false, $rel = false) {
 		foreach($entities->hashtags as $hashtag) {
 			$text = $hashtag->text;
 			$pattern = '/(^|\s)([#＃]+)('. $text .')/iu';
-			$link_html = ' <a href="hash/' . $text . '">#' . $text . '</a> ';
+			$link_html = ' <a href="hash/' . $text . '">#' . $text . '</a>';
 			$out = preg_replace($pattern,  $link_html, $out, 1);
 		}
 	} else {
@@ -634,9 +634,6 @@ function twitter_parse_tags($input, $entities = false, $rel = false) {
 		}
 		$tok = strtok(" \n\t\n\r\0");	// Move to the next token
 	}
-
-	//Linebreaks.  Some clients insert \n for formatting.
-	// $out = nl2br($out);
 
 	//Return the completed string
 	return $out;
