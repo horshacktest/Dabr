@@ -369,7 +369,6 @@ function theme_retweet($status)
 		$content .= "<p>"._(RETWEET_COMMENT).":</p>
 					<form action='update' method='post'>
 						<input type='hidden' name='from' value='{$from}' />
-						<input type='hidden' name='in_reply_to_id' value='{$status->id_str}' />
 						<input type='hidden' name='attachment_url' value='https://twitter.com/{$screen_name}/status/{$id}' />
 						<textarea name='status'
 							style='width:90%;
@@ -392,7 +391,6 @@ function theme_retweet($status)
 	$content .= "<p>"._(RETWEET_EDIT).":</p>
 					<form action='update' method='post'>
 						<input type='hidden' name='from' value='{$from}' />
-						<input type='hidden' name='in_reply_to_id' value='{$status->id_str}' />
 						<textarea name='status'
 							style='width:90%;
 							max-width: 400px;'
