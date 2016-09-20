@@ -1490,11 +1490,11 @@ function twitter_user_page($query) {
 
 	// Build a status message to everyone we're talking to
 	$status = '';
-	foreach ($to_users as $username) {
-		if (!user_is_current_user($username)) {
-			$status .= "@{$username} ";
-		}
-	}
+	// foreach ($to_users as $username) {
+	// 	if (!user_is_current_user($username)) {
+	// 		$status .= "@{$username} ";
+	// 	}
+	// }
 
 	// Add in the hashtags they've used
 	foreach ($hashtags as $hashtag) {
