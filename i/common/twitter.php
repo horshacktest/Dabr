@@ -524,7 +524,7 @@ function twitter_get_media($status) {
 
 function twitter_parse_tags($input, $entities = false, $rel = false) {
 
-	$out = $input;
+	$out =  nl2br($input);
 
 	// Use the Entities to replace hyperlink URLs
 	// http://dev.twitter.com/pages/tweet_entities
@@ -636,7 +636,7 @@ function twitter_parse_tags($input, $entities = false, $rel = false) {
 	}
 
 	//Linebreaks.  Some clients insert \n for formatting.
-	$out = nl2br($out);
+	// $out = nl2br($out);
 
 	//Return the completed string
 	return $out;
