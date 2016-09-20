@@ -343,11 +343,6 @@ function js_counter($id='status',$length = 140)
 		twttr;
 		function {$functionName}() {
 			var {$remainingVar} = {$length} - twttr.txt.getTweetLength(document.getElementById(\"{$id}\").value);
-			if (document.getElementById(\"file\") != undefined) {
-				if (document.getElementById(\"file\").value != \"\") {
-					{$remainingVar} = {$remainingVar} - {$linkLength};
-				}
-			}
 			document.getElementById(\"{$remaining}\").innerHTML = {$remainingVar};
 			if({$remainingVar} < 0) {
 				var colour = \"#FF0000\";
@@ -395,9 +390,6 @@ function execute_codebird($function, $api_options = NULL) {
 		$cb = get_codebird();
 		$result = $cb->$function($api_options);
 		if($result->errors) {
-			var_export($result);
-			var_export($api_options);
-			die();
 			//	Twitter returned an error to be displayed to the user.
 			$error_message = $result->errors[0]->message;
 			$error_code = $result->errors[0]->code;
