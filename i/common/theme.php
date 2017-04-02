@@ -267,7 +267,7 @@ function theme_directs_form($to) {
 	return $content;
 }
 
-function theme_status_form($text = '', $in_reply_to_id = null) {
+function theme_status_form($text = '', $in_reply_to_id = null, $replies_others = null, $replies_others_csv = null) {
 
 	if (user_is_authenticated()) {
 		$icon = "🐦";//"images/twitter-bird-16x16.png";
@@ -287,9 +287,16 @@ function theme_status_form($text = '', $in_reply_to_id = null) {
 			$icon_class = '';
 		}
 
-      $output = '
-	      <form method="post" action="update" enctype="multipart/form-data">
-            <fieldset>
+		$output = '
+			<form method="post" action="update" enctype="multipart/form-data">';
+		if ($replies_others != null ){
+			$output .= $replies_others;
+		}
+
+		if ($replies_others_csv != null) {
+			$output .= '<input type="hidden" name="replies_csv" value="'.$replies_others_csv.'">';
+		}
+      $output .='<fieldset>
                <legend><span '.$icon_class.' id="twitterbird">'.$icon.'</span>'._(STATUS_BOX).'</legend>
                <textarea id="status" name="status" rows="4" class="statusbox">'.$text.'</textarea>
                <div>

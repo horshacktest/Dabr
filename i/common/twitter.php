@@ -1219,6 +1219,23 @@ function twitter_update() {
 			$api_options["in_reply_to_status_id"] = $in_reply_to_id;
 		}
 
+		//	Is this a new multi-reply?
+		if(!empty($_POST['check_list'])) {
+			$csv_array = str_getcsv($_POST['replies_csv']);
+			//	Remove all the values which were checked
+			foreach($_POST['check_list'] as $check) {
+				if(($key = array_search($check, $csv_array)) !== false){
+					 $csv_array[$key]=0;
+				}
+			}
+			$exclude_reply_user_ids = "";
+			foreach ($csv_array as $element){
+				$exclude_reply_user_ids .= $element . ",";
+			}
+
+			$api_options['exclude_reply_user_ids']  = $exclude_reply_user_ids;
+		}
+
 		// Geolocation parameters
 		list($lat, $long) = explode(',', $_POST['location']);
 
@@ -1442,11 +1459,8 @@ function twitter_find_tweet_in_timeline($tweet_id, $tl) {
 
 function twitter_user_page($query) {
 	$screen_name    = $query[1];
-	// echo "<h1>q1 = {$screen_name}</h1>";
 	$subaction      = $query[2];
-	// echo "<h1>q2 = {$subaction}</h1>";
 	$in_reply_to_id = (string) $query[3];
-	// echo "<h1>q3 = {$in_reply_to_id}</h1>";
 
 	$content = '';
 
@@ -1487,9 +1501,7 @@ function twitter_user_page($query) {
 	if (is_numeric($in_reply_to_id)) {
 		$tweet = twitter_find_tweet_in_timeline($in_reply_to_id, $tl);
 
-		$out = twitter_parse_tags($tweet->text);
-
-		$content .= "<p>".sprintf(_(IN_REPLY_TO),$screen_name).":<br />{$out}</p>";
+		$out = twitter_parse_tags($tweet->full_text);
 
 		//	Reply to all users mentioned in the tweet.
 		//	TODO: Include the retweeter?
@@ -1497,9 +1509,29 @@ function twitter_user_page($query) {
 			->extractMentionedUsernames();
 		$to_users = array_unique(array_merge($to_users, $found));
 
+		$entities = isset($tweet->entities) ? $tweet->entities : array();
+		$entities = array($entities->user_mentions);
+		$replying_to = $screen_name;
+		$replies_others = "";
+		$replies_others_csv = "";
+
+		foreach ($entities[0] as $to_user) {
+			$replies_others .=  '<label>
+			                     	<input type="checkbox"
+			                              checked="checked"
+			                              name="check_list[]"
+			                              value="'.$to_user->id_str.'">@'.$to_user->screen_name.
+			                     '</label> | ';
+			// $replying_to .=  " @" . $to_user->screen_name;
+			$replies_others_csv .= $to_user->id_str . ",";
+		}
+
 		if ($tweet->entities->hashtags) {
 			$hashtags = $tweet->entities->hashtags;
 		}
+
+		// $content .= "<p>".sprintf(_(IN_REPLY_TO),$screen_name).":<br />{$out}</p>";
+		$content .= "<p>".sprintf(_(IN_REPLY_TO),$replying_to).":<br />{$out}</p>";
 	}
 
 	// Build a status message to everyone we're talking to
@@ -1515,7 +1547,7 @@ function twitter_user_page($query) {
 		$status .= "#{$hashtag->text} ";
 	}
 
-	$content .= theme('status_form', $status, $in_reply_to_id);
+	$content .= theme('status_form', $status, $in_reply_to_id, $replies_others, $replies_others_csv);
 	$content .= theme('user_header', $user);
 	$content .= theme('timeline', $tl);
 
