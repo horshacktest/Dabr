@@ -139,7 +139,6 @@ small,small a{
 	padding: 0.2em;
 	font-family:icons,sans-serif;
 	font-size: 1.75em;
-	width:99%;
 }
 
 .menu-text{
