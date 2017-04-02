@@ -480,7 +480,14 @@ function twitter_get_media($status) {
 					$media_html .= "<figure>";
 				}
 
-				$media_html .= "<a href=\"" . image_proxy($image) . ":orig\" target=\"" . get_target() . "\" class=\"action\">
+				//	Check it isn't a DM'd image
+				if (strpos($image, "ton.twitter.com") == false) {
+					$image_link = $image . ":orig";
+				} else {
+					$image_link = $image . ":large";
+				}
+
+				$media_html .= "<a href=\"" . image_proxy($image_link) . "\" target=\"" . get_target() . "\" class=\"action\">
 				                  <img src=\"" . image_proxy($image) . ":{$image_size}\" width=\"{$width}\" height=\"{$height}\"".
 											  $alt_html .
 										">
@@ -508,12 +515,19 @@ function twitter_get_media($status) {
 				$image = $media->media_url;
 			}
 
+			//	Check it isn't a DM'd image
+			if (strpos($image, "ton.twitter.com") == false) {
+				$image_link = $image . ":orig";
+			} else {
+				$image_link = $image . ":large";
+			}
+
 			$link = $media->url;
 
 			$width = $media->sizes->$image_size->w;
 			$height = $media->sizes->$image_size->h;
 
-			$media_html .= "<span class=\"media\"><a href=\"" . image_proxy($image) . ":orig\" target=\"" . get_target() . "\">";
+			$media_html .= "<span class=\"media\"><a href=\"" . image_proxy($image_link) . "\" target=\"" . get_target() . "\">";
 			$media_html .=     "<img src=\"" . image_proxy($image) . ":{$image_size}\" width=\"{$width}\" height=\"{$height}\">";
 			$media_html .= "</a></span>";
 		}
