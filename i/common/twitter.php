@@ -693,6 +693,7 @@ function twitter_status_page($query) {
 		$status = execute_codebird("statuses_show_ID",$api_options);
 
 		$text = $status->full_text;	//	Grab the text before it gets formatted
+		$user = $status->user;
 
 		$content = theme('status', $status);
 
@@ -712,9 +713,8 @@ function twitter_status_page($query) {
 
 		$content .= "<p>
 		                <strong>
-		                    <a href=\"https://mobile.twitter.com/{$screen_name}/status/{$id}/report\" ".
-										"target=\"". get_target() . "\">" .
-		                     _(LINK_ABUSE).
+		                    <a href='.confirm/.spam/{$user->screen_name}/{$user->id}' target=\"". get_target() . "\">" .
+		                        _(REPORT_SPAM).
 		                    "</a>
 		                </strong>
 		            </p>";
