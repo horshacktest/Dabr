@@ -289,58 +289,60 @@ function theme_status_form($text = '', $in_reply_to_id = null, $replies_others =
 
 		$output = '
 			<form method="post" action="update" enctype="multipart/form-data">';
+
+		$output .='<fieldset>';
+		$output .='<legend><span '.$icon_class.' id="twitterbird">'.$icon.'</span>'._(STATUS_BOX).'</legend>';
+
 		if ($replies_others != null ){
 			$output .= $replies_others;
 		}
-
 		if ($replies_others_csv != null) {
 			$output .= '<input type="hidden" name="replies_csv" value="'.$replies_others_csv.'">';
 		}
-      $output .='<fieldset>
-               <legend><span '.$icon_class.' id="twitterbird">'.$icon.'</span>'._(STATUS_BOX).'</legend>
-               <textarea id="status" name="status" rows="4" class="statusbox">'.$text.'</textarea>
-               <div>
-                  <input name="in_reply_to_id" value="'.$in_reply_to_id.'" type="hidden" />
-                  <input type="submit" value="'._(SEND_BUTTON).'" />
-                  <span id="status-remaining">140</span>
-                  <span id="geo" style="display: none;">
-                  	<input onclick="goGeo()" type="checkbox" id="geoloc" name="location" />
-                     <label for="geoloc" id="lblGeo"></label>
-                  </span>
-               </div>
-               <span '.$icon_class.' style="float:right;">'.$camera.'</span>
-               <div class="fileinputs">
+
+		$output .='<textarea id="status" name="status" rows="4" class="statusbox">'.$text.'</textarea>
+		         <div>
+		            <input name="in_reply_to_id" value="'.$in_reply_to_id.'" type="hidden" />
+		            <input type="submit" value="'._(SEND_BUTTON).'" />
+		            <span id="status-remaining">140</span>
+		            <span id="geo" style="display: none;">
+		            	<input onclick="goGeo()" type="checkbox" id="geoloc" name="location" />
+		               <label for="geoloc" id="lblGeo"></label>
+		            </span>
+		         </div>
+		         <span '.$icon_class.' style="float:right;">'.$camera.'</span>
+		         <div class="fileinputs">
 						<input type="file" accept="image/*,video/mp4" name="image" class="file" id="file" />
 					</div>
-            </fieldset>
-            <script type="text/javascript">
-               started = false;
-               chkbox = document.getElementById("geoloc");
-               if (navigator.geolocation) {
-                  geoStatus("'._(SHARE_MY_LOCATION).'");
-                  if ("'.$_COOKIE['geo'].'"=="Y") {
-                     chkbox.checked = true;
-                     goGeo();
-                  }
-               }
-               function goGeo(node) {
-                  if (started) return;
-                  started = true;
-                  geoStatus("'._(LOCATING).'");
-                  navigator.geolocation.getCurrentPosition(geoSuccess, geoStatus , { enableHighAccuracy: true });
-               }
-               function geoStatus(msg) {
-                  document.getElementById("geo").style.display = "inline";
-                  document.getElementById("lblGeo").innerHTML = msg;
-               }
-               function geoSuccess(position) {
-                  geoStatus("<a href=\'https://maps.google.co.uk/m?q=" + position.coords.latitude + "," + position.coords.longitude + "\' target=\'blank\'>'.
+		      </fieldset>
+		      <script type="text/javascript">
+		         started = false;
+		         chkbox = document.getElementById("geoloc");
+		         if (navigator.geolocation) {
+		            geoStatus("'._(SHARE_MY_LOCATION).'");
+		            if ("'.$_COOKIE['geo'].'"=="Y") {
+		               chkbox.checked = true;
+		               goGeo();
+		            }
+		         }
+		         function goGeo(node) {
+		            if (started) return;
+		            started = true;
+		            geoStatus("'._(LOCATING).'");
+		            navigator.geolocation.getCurrentPosition(geoSuccess, geoStatus , { enableHighAccuracy: true });
+		         }
+		         function geoStatus(msg) {
+		            document.getElementById("geo").style.display = "inline";
+		            document.getElementById("lblGeo").innerHTML = msg;
+		         }
+		         function geoSuccess(position) {
+		            geoStatus("<a href=\'https://maps.google.co.uk/m?q=" + position.coords.latitude + "," + position.coords.longitude + "\' target=\'blank\'>'.
 											_(SHARE_MY_LOCATION).
 										'</a>");
-                  chkbox.value = position.coords.latitude + "," + position.coords.longitude;
-               }
-            </script>
-        </form>';
+		            chkbox.value = position.coords.latitude + "," + position.coords.longitude;
+		         }
+		      </script>
+		  </form>';
         $output .= js_counter('status');
         return $output;
 	}

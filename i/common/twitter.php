@@ -1516,12 +1516,12 @@ function twitter_user_page($query) {
 		$replies_others_csv = "";
 
 		foreach ($entities[0] as $to_user) {
-			$replies_others .=  '<label>
+			$replies_others .=  '<div class="replyto"><label>
 			                     	<input type="checkbox"
 			                              checked="checked"
 			                              name="check_list[]"
 			                              value="'.$to_user->id_str.'">@'.$to_user->screen_name.
-			                     '</label> | ';
+			                     '</label></div>';
 			// $replying_to .=  " @" . $to_user->screen_name;
 			$replies_others_csv .= $to_user->id_str . ",";
 		}
@@ -1531,7 +1531,7 @@ function twitter_user_page($query) {
 		}
 
 		// $content .= "<p>".sprintf(_(IN_REPLY_TO),$screen_name).":<br />{$out}</p>";
-		$content .= "<p>".sprintf(_(IN_REPLY_TO),$replying_to).":<br />{$out}</p>";
+		$content .= "<div class=\"inreplyto\">".sprintf(_(IN_REPLY_TO),$replying_to).":<br />{$out}</div>";
 	}
 
 	// Build a status message to everyone we're talking to

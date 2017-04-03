@@ -115,6 +115,8 @@ textarea {
 
 form{margin:.3em;}
 
+.inreplyto{margin:.3em;}
+
 a{color:#{$c->links}}
 
 small,small a{
