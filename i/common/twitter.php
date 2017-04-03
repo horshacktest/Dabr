@@ -537,101 +537,77 @@ function twitter_get_media($status) {
 }
 
 function twitter_parse_tags($input, $entities = false, $rel = false) {
-	//Linebreaks.  Some clients insert \n for formatting.
-	$out =  nl2br($input);
+// var_export($entities);
+	$replacements = array();
+	$entities = (array)$entities;
+	// var_export($entities);
 
-	// Use the Entities to replace hyperlink URLs
-	// http://dev.twitter.com/pages/tweet_entities
-	if($entities->urls) {
-		foreach($entities->urls as $urls) {
-			if($urls->expanded_url != "") {
-				$display_url = str_replace ( "@", "%40", htmlentities($urls->expanded_url, ENT_QUOTES));
-			}
-			else {
-				$display_url = str_replace ( "@", "%40", htmlentities($urls->url, ENT_QUOTES));
-			}
-
-			//$url = $urls->url;
-			//	Stop Invasive monitoring of URLs
-			$url = $urls->expanded_url;
-			$parsed_url = parse_url($url);
+	if (isset($entities['hashtags'])) {
+		foreach ($entities['hashtags'] as $hashtag) {
+			$hashtag = (array)$hashtag;
+			list ($start, $end) = $hashtag['indices'];
+			$replacements[$start] = array($start, $end,
+				"<a href=\"hash/{$hashtag['text']}\">#{$hashtag['text']}</a>");
+		}
+	}
+	if (isset($entities['urls'])) {
+		foreach ($entities['urls'] as $url) {
+			$url = (array)$url;
+			$parsed_url = parse_url($url['expanded_url']);
 
 			if (empty($parsed_url['scheme'])) {
-				$url = 'http://' . $url;
+				$url_full = 'http://' . $url['expanded_url'];
+			} else{
+				$url_full = $url['expanded_url'];
 			}
 
 			if (setting_fetch('dabr_gwt') == 'on') { // If the user wants links to go via GWT
-				$encoded = urlencode($url);
-				$link = "https://googleweblight.com/?lite_url={$encoded}";
+					$encoded = urlencode($url_full);
+					$url_full = "http://google.com/gwt/n?u={$encoded}";
 			}
-			else {
-				//	URL Encode the `@` so that it isn't mistaken for a mention
-				$link = str_replace ( "@", "%40", $url);
-			}
-
-			if ($rel) {
-				$rel = " rel='{$rel}'";
-			} else {
-				$rel = '';
-			}
-
-			$link_html = '<a href="' . $link . '" target="' . get_target() . '"' . $rel .'>' . $display_url . '</a>';
-			$url = $urls->url;
-
-			// Replace all URLs *UNLESS* they have already been linked (for example to an image)
-			$pattern = '#((?<!href\=(\'|\"))'.preg_quote($url,'#').')#i';
-			$out = preg_replace($pattern,  $link_html, $out);
-		}
-	}	else {  // If Entities haven't been returned (usually because of search or a bio) use Autolink
-		// Create an array containing all URLs
-		$urls = Twitter_Extractor::create($input)
-				->extractURLs();
-
-		// Hyperlink the URLs
-		if (setting_fetch('dabr_gwt') == 'on') { // If the user wants links to go via GWT
-			foreach($urls as $url) {
-				$encoded = urlencode($url);
-				$out = str_replace($url,
-										"<a href='http://google.com/gwt/n?u={$encoded}' target='" . get_target() . "'>{$url}</a>",
-										$out);
-			}
-		}
-		else {
-			$out = Twitter_Autolink::create($out)
-					->addLinksToURLs();
+			list ($start, $end) = $url['indices'];
+			$replacements[$start] = array($start, $end,
+				"<a href=\"{$url_full}\"". get_target() .">{$url['display_url']}</a>");
 		}
 	}
-
-	if($entities->hashtags) {
-		foreach($entities->hashtags as $hashtag) {
-			$text = $hashtag->text;
-			$pattern = '/(^|\s)([#＃]+)('. $text .')/iu';
-			$link_html = ' <a href="hash/' . $text . '">#' . $text . '</a>';
-			$out = preg_replace($pattern,  $link_html, $out, 1);
-		}
-	} else {
-		// Hyperlink the #
-		$out = Twitter_Autolink::create($out)
-				->setTarget('')
-				->addLinksToHashtags();
-	}
-
-	if($entities->media) {
-		foreach($entities->media as $media) {
-			$url = $media->url;
-			$pattern = '#((?<!href\=(\'|\"))'.preg_quote($url,'#').')#i';
-			$link_html = "<a href='{$media->url}' target='" . get_target() . "'>{$media->display_url}</a>";
-			$out = preg_replace($pattern,  $link_html, $out, 1);
+	if (isset($entities['user_mentions'])) {
+		foreach ($entities['user_mentions'] as $mention) {
+			$mention = (array)$mention;
+			list ($start, $end) = $mention['indices'];
+			$replacements[$start] = array($start, $end,
+				"<a href=\"{$mention['screen_name']}\">@{$mention['screen_name']}</a>");
 		}
 	}
+	if (isset($entities['media'])) {
+		foreach ($entities['media'] as $media) {
+			$media = (array)$media;
+			list ($start, $end) = $media['indices'];
+			$replacements[$start] = array($start, $end,
+				"");
+		}
+	}
+// var_export($replacements);
+	// sort in reverse order by start location
+	krsort($replacements);
 
-	//	Hyperlink the @ and lists
+	foreach ($replacements as $replace_data) {
+		list ($start, $end, $replace_text) = $replace_data;
+		//	Twitter counts by CHARACTER - so you need a Multibyte aware PHP installation
+		$input = mb_substr($input, 0, $start, 'UTF-8').$replace_text.mb_substr($input, $end, NULL, 'UTF-8');
+	}
+
+	//Linebreaks.  Some clients insert \n for formatting.
+	$out =  nl2br($input);
+
+	//	Links not provided by Twitter
+	//	Lists
 	$out = Twitter_Autolink::create($out)
-			->setTarget('')
-			->addLinksToUsernamesAndLists();
+		->setTarget('')
+		->addLinksToUsernamesAndLists();
+	//	Cashtags
 	$out = Twitter_Autolink::create($out)
-			->setTarget('')
-			->addLinksToCashtags();
+		->setTarget('')
+		->addLinksToCashtags();
 	// Emails
 	$tok = strtok($out, " \n\t\n\r\0");	// Tokenise the string by whitespace
 
