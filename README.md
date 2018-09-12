@@ -8,6 +8,9 @@ To play with the latest version of Dabr, visit https://dabr.eu/
 
 This is a fork of the [original Dabr code](https://code.google.com/p/dabr/) by one of its main contributors.
 
+[![Buy me a coffee](https://www.ko-fi.com/img/donate_sm.png)](https://ko-fi.com/edent)
+
+
 ## How to install
 
 Dabr is designed to be *as simple as possible* to install on your webserver.  If you can run PHP v5.5.0 on your server, you can run Dabr.
